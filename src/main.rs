@@ -1,6 +1,5 @@
 use clap::Parser;
 use serde::{Deserialize, Serialize};
-use std::{fs::File, str::FromStr};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct TodoItem {
