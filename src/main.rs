@@ -1,3 +1,4 @@
+// use clap::{Parser, Subcommand};
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 
@@ -55,11 +56,14 @@ impl Default for TodoList {
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
-    /// action - can be one of list, add, remove, complete
-    action: String,
+    #[command(subcommand)]
+    command: Commands,
+}
 
-    /// object - what to do act on
-    object: String,
+#[derive(clap::Subcommand, Debug)]
+enum Commands {
+    Add { object: String },
+    Ls,
 }
 
 fn main() {
@@ -67,10 +71,9 @@ fn main() {
 
     let mut todo_list = TodoList::default();
 
-    match args.action.as_str() {
-        "add" => todo_list.add(args.object.clone()),
-        "ls" => todo_list.print_list(),
-        _ => eprintln!("unknown"),
+    match args.command {
+        Commands::Add { object } => todo_list.add(object),
+        Commands::Ls => todo_list.print_list(),
     }
 
     // println!("{:#?}", args);
