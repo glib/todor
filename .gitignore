@@ -24,3 +24,6 @@ target
 # Added by cargo
 
 /target
+
+# storage file for todos shouldn't get submitted
+todo.yaml

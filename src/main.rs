@@ -1,13 +1,13 @@
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 struct TodoItem {
     description: String,
     complete: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 struct TodoList {
     filename: String,
     main_list: Vec<TodoItem>,
@@ -15,7 +15,7 @@ struct TodoList {
 }
 
 impl TodoList {
-    fn add(mut self, item: String) {
+    fn add(&mut self, item: String) {
         let new_item = TodoItem {
             description: item,
             complete: false,
@@ -24,21 +24,21 @@ impl TodoList {
         self.save();
     }
 
-    fn print_list(self) {
-        for item in self.main_list {
+    fn print_list(&self) {
+        for item in &self.main_list {
             println!("{:#?}", item);
         }
     }
 
-    fn save(self) {
-        let serialized = serde_yml::to_string(&self.main_list).unwrap();
+    fn save(&self) {
+        // let serialized = serde_yml::to_string(&self.main_list).unwrap();
         let file = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
             .open(&self.filename)
             .expect("Failed to open file");
-        serde_yml::to_writer(file, &serialized).unwrap();
+        serde_yml::to_writer(file, &self.main_list).unwrap();
     }
 }
 
@@ -65,7 +65,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let todo_list = TodoList::default();
+    let mut todo_list = TodoList::default();
 
     match args.action.as_str() {
         "add" => todo_list.add(args.object.clone()),
@@ -73,5 +73,5 @@ fn main() {
         _ => eprintln!("unknown"),
     }
 
-    println!("{:#?}", args);
+    // println!("{:#?}", args);
 }
