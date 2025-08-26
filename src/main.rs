@@ -1,7 +1,7 @@
 // use clap::{Parser, Subcommand};
 use clap::Parser;
-use std::fs::File;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 struct TodoItem {
@@ -27,20 +27,27 @@ impl TodoList {
     }
 
     fn print_list(&self) {
+        for item in &self.main_list {
+            println!("{:#?}", item);
+        }
+    }
+
+    fn load(&mut self) {
         let file = match std::fs::OpenOptions::new().read(true).open(&self.filename) {
             Ok(file) => file,
-            Err(e) => { 
+            Err(e) => {
                 println!("Error reading file {e}");
+                self.main_list = Vec::new();
                 return;
-                }
-        };
-        match serde_yml::from_reader::<File, Vec<TodoItem>>(file) {
-            Ok(todos) => {
-                for item in todos {
-                    println!("{:#?}", item);
-                }
             }
-            Err(e) => println!("Error parsing file: {e}"),
+        };
+
+        match serde_yml::from_reader::<File, Vec<TodoItem>>(file) {
+            Ok(todos) => self.main_list = todos,
+            Err(e) => {
+                println!("Error parsing file: {e}");
+                self.main_list = Vec::new();
+            }
         }
     }
 
@@ -54,15 +61,15 @@ impl TodoList {
             .expect("Failed to open file");
         serde_yml::to_writer(file, &self.main_list).unwrap();
     }
-}
 
-impl Default for TodoList {
-    fn default() -> TodoList {
-        TodoList {
-            filename: String::from("todo.yaml"),
+    fn new(filename: String) -> Self {
+        let mut list = Self {
+            filename,
             main_list: Vec::new(),
             name: String::from("Main"),
-        }
+        };
+        list.load();
+        list
     }
 }
 
@@ -82,7 +89,7 @@ enum Commands {
 fn main() {
     let args = Args::parse();
 
-    let mut todo_list = TodoList::default();
+    let mut todo_list = TodoList::new("todo.yaml".to_string());
 
     match args.command {
         Commands::Add { object } => todo_list.add(object),
