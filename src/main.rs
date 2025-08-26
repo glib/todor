@@ -16,6 +16,13 @@ struct TodoList {
     name: String,
 }
 
+fn make_checkbox(is_checked: bool) -> String {
+    match is_checked {
+        true => "[x]".to_string(),
+        false => "[ ]".to_string(),
+    }
+}
+
 impl TodoList {
     fn add(&mut self, item: String) {
         let new_item = TodoItem {
@@ -28,7 +35,8 @@ impl TodoList {
 
     fn print_list(&self) {
         for item in &self.main_list {
-            println!("{:#?}", item);
+            // println!("{:#?}", item);
+            println!("{}\t{}", make_checkbox(item.complete), item.description)
         }
     }
 
