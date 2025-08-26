@@ -1,5 +1,6 @@
 // use clap::{Parser, Subcommand};
 use clap::Parser;
+use std::fs::File;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -26,8 +27,20 @@ impl TodoList {
     }
 
     fn print_list(&self) {
-        for item in &self.main_list {
-            println!("{:#?}", item);
+        let file = match std::fs::OpenOptions::new().read(true).open(&self.filename) {
+            Ok(file) => file,
+            Err(e) => { 
+                println!("Error reading file {e}");
+                return;
+                }
+        };
+        match serde_yml::from_reader::<File, Vec<TodoItem>>(file) {
+            Ok(todos) => {
+                for item in todos {
+                    println!("{:#?}", item);
+                }
+            }
+            Err(e) => println!("Error parsing file: {e}"),
         }
     }
 
